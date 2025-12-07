@@ -96,12 +96,41 @@
                 <li>
                   <strong>💰 Price:</strong> <span id="info-price">-</span>
                 </li>
+                <li>
+                  <strong>📍 Distance:</strong>
+                  <span id="info-distance">Set your location to see distance.</span>
+                </li>
               </ul>
 
               <div class="creator-info" id="creator-info" style="display: none">
                 <strong>👤 Created by:</strong> <span id="creator-name">-</span
                 ><br />
                 <small>Posted on <span id="created-date">-</span></small>
+              </div>
+            </section>
+
+            <section class="distance-card">
+              <h3>📍 Distance from you</h3>
+              <p id="detail-location-status">
+                Add a location to see how far this event is from you.
+              </p>
+              <div class="distance-actions">
+                <input
+                  type="text"
+                  id="detail-location-input"
+                  placeholder="Enter your city or address"
+                />
+                <div class="distance-buttons">
+                  <button type="button" id="detail-location-save">
+                    Use this address
+                  </button>
+                  <button type="button" id="detail-location-gps">
+                    Use my device location
+                  </button>
+                </div>
+                <p class="distance-hint">
+                  Powered by OpenStreetMap geocoding. Saved only in your browser.
+                </p>
               </div>
             </section>
 

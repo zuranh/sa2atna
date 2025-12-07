@@ -119,6 +119,36 @@
               </select>
             </div>
 
+            <div class="location-card">
+              <div class="location-card-header">
+                <div>
+                  <p class="location-title">Show distance from you</p>
+                  <p class="location-status" id="location-status">
+                    Add a location to see how far events are from you.
+                  </p>
+                </div>
+              </div>
+              <div class="location-actions">
+                <input
+                  type="text"
+                  id="location-input"
+                  placeholder="Enter your city or address"
+                />
+                <div class="location-buttons">
+                  <button type="button" id="location-save-btn">
+                    Use this address
+                  </button>
+                  <button type="button" id="location-gps-btn">
+                    Use my device location
+                  </button>
+                </div>
+                <p class="location-hint">
+                  We use the free OpenStreetMap geocoding service and save
+                  results in your browser only.
+                </p>
+              </div>
+            </div>
+
             <button type="submit" id="apply-filters-btn">Apply Filters</button>
             <button type="button" id="clear-filters-btn">Clear Filters</button>
           </form>
