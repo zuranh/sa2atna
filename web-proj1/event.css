@@ -136,13 +136,7 @@ main#main-content {
   margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.distance-actions input {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  gap: 12px;
 }
 
 .distance-buttons {

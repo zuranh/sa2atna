@@ -301,11 +301,10 @@ body {
     color: #4b5563;
 }
 
-.location-actions input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
+.location-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .location-buttons {

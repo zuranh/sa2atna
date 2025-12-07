@@ -482,9 +482,6 @@ function setupEventListeners() {
   }
 
   document
-    .getElementById("location-save-btn")
-    ?.addEventListener("click", handleLocationSubmit);
-  document
     .getElementById("location-gps-btn")
     ?.addEventListener("click", handleBrowserLocation);
 }
@@ -492,30 +489,6 @@ function setupEventListeners() {
 function applyFilters() {
   selectedGenre = selectedGenre || "";
   loadEvents();
-}
-
-async function handleLocationSubmit(event) {
-  event?.preventDefault();
-  const input = document.getElementById("location-input");
-  if (!input) return;
-  const value = input.value.trim();
-  if (!value) {
-    alert("Please type a city or address first.");
-    return;
-  }
-
-  try {
-    setLocationStatus("Looking up that place...");
-    const coords = await geocodePlace(value);
-    userLocation = { lat: coords.lat, lng: coords.lng, label: value };
-    saveUserLocation(userLocation);
-    await addDistancesToEvents();
-    renderEvents();
-    updateLocationStatus();
-  } catch (err) {
-    console.error("Failed to geocode user location", err);
-    setLocationStatus("Could not find that place. Try something else.");
-  }
 }
 
 function handleBrowserLocation() {
@@ -539,7 +512,11 @@ function handleBrowserLocation() {
     },
     (err) => {
       console.error("Geolocation error", err);
-      setLocationStatus("We couldn't read your location.");
+      setLocationStatus(
+        err.code === err.PERMISSION_DENIED
+          ? "Turn on location permissions to see distances."
+          : "We couldn't read your location. Try again."
+      );
     }
   );
 }
@@ -555,6 +532,6 @@ function updateLocationStatus() {
   if (userLocation) {
     status.textContent = `Distances shown from ${userLocation.label}`;
   } else {
-    status.textContent = "Add a location to see how far events are from you.";
+    status.textContent = "Tap the button to use your device location.";
   }
 }
