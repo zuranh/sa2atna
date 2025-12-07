@@ -1,5 +1,11 @@
-import { auth } from "/web-proj1/firebase-config.js";
+import { auth } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  geocodePlace,
+  haversineDistanceKm,
+  loadUserLocation,
+  saveUserLocation,
+} from "./geocode.js";
 
 let allEvents = [];
 let allGenres = [];
@@ -21,9 +27,17 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   await loadGenres();
   await loadEvents();
-  getUserLocation();
   setupEventListeners();
+  hydrateSavedLocation();
 });
+
+function hydrateSavedLocation() {
+  userLocation = loadUserLocation();
+  updateLocationStatus();
+  if (userLocation && allEvents.length) {
+    addDistancesToEvents().then(renderEvents);
+  }
+}
 
 async function loadCurrentUser(firebaseUser) {
   try {
@@ -43,6 +57,13 @@ function updateUIForLoggedIn() {
   document.getElementById("favorites-link").style.display = "block";
   document.getElementById("registrations-link").style.display = "block";
   document.getElementById("profile-link").style.display = "block";
+  const userMenu = document.getElementById("user-menu");
+  if (userMenu) {
+    userMenu.style.cursor = "pointer";
+    userMenu.onclick = () => {
+      window.location.href = "account.html";
+    };
+  }
   if (currentUser) {
     const avatar = document.getElementById("user-avatar");
     avatar.textContent = currentUser.name
@@ -62,6 +83,8 @@ function updateUIForLoggedOut() {
   document.getElementById("registrations-link").style.display = "none";
   document.getElementById("profile-link").style.display = "none";
   document.getElementById("admin-link").style.display = "none";
+  const userMenu = document.getElementById("user-menu");
+  if (userMenu) userMenu.onclick = null;
 }
 
 // Load genres from API
@@ -179,9 +202,11 @@ function createEventCard(event) {
     genresDiv.appendChild(tag);
   }
 
-  const distance = event.distance_km
-    ? `<p class="event-distance">📍 ${event.distance_km} km away</p>`
-    : "";
+  const distancePara = document.createElement("p");
+  distancePara.className = "event-distance";
+  if (event.distance_km) {
+    distancePara.textContent = `📍 ${event.distance_km} km away`;
+  }
 
   const actionsDiv = document.createElement("div");
   actionsDiv.className = "card-actions";
@@ -206,11 +231,7 @@ function createEventCard(event) {
   card.appendChild(preview);
   card.appendChild(h4);
   card.appendChild(infoP);
-  if (distance) {
-    const ddiv = document.createElement("div");
-    ddiv.innerHTML = distance;
-    card.appendChild(ddiv);
-  }
+  if (event.distance_km) card.appendChild(distancePara);
   card.appendChild(genresDiv);
   card.appendChild(actionsDiv);
 
@@ -233,23 +254,11 @@ async function loadEvents() {
       params.append("date_to", date); // Add this for single-day filtering
     }
 
-    const location = document.getElementById("filter-location")?.value;
-    // Location filtering isn't implemented in backend, so skip for now
-    // if (location) params.append("location", location);
-
-    const radius = document.getElementById("filter-radius")?.value;
-    if (radius) params.append("radius", radius);
-
     const price = document.getElementById("filter-price")?.value;
     if (price) params.append("price_max", price); // Changed from "max_price"
 
     const sort = document.getElementById("filter-sort")?.value;
     if (sort) params.append("sort", sort);
-
-    if (userLocation) {
-      params.append("lat", userLocation.lat);
-      params.append("lng", userLocation.lng);
-    }
 
     const response = await fetch(
       `/web-proj1/api/events.php?${params.toString()}`
@@ -258,6 +267,7 @@ async function loadEvents() {
 
     if (data.success) {
       allEvents = data.events;
+      await addDistancesToEvents();
       renderEvents();
     } else {
       throw new Error(data.error || "Failed to load events");
@@ -283,6 +293,39 @@ function renderEvents() {
 
   container.innerHTML = "";
   allEvents.forEach((event) => container.appendChild(createEventCard(event)));
+}
+
+async function addDistancesToEvents() {
+  if (!userLocation) {
+    allEvents.forEach((evt) => delete evt.distance_km);
+    return;
+  }
+
+  const promises = allEvents.map(async (evt) => {
+    const coords = await getEventCoordinates(evt);
+    if (coords) {
+      evt.distance_km = haversineDistanceKm(userLocation, coords).toFixed(1);
+    } else {
+      delete evt.distance_km;
+    }
+  });
+
+  await Promise.all(promises);
+}
+
+async function getEventCoordinates(evt) {
+  const lat = parseFloat(evt.lat);
+  const lng = parseFloat(evt.lng);
+  if (!Number.isNaN(lat) && !Number.isNaN(lng)) return { lat, lng };
+
+  if (evt.location) {
+    try {
+      return await geocodePlace(evt.location);
+    } catch (err) {
+      console.warn("Unable to geocode event location", evt.location, err);
+    }
+  }
+  return null;
 }
 
 // Load favorites
@@ -350,24 +393,6 @@ window.toggleFavorite = async function (eventId) {
 window.viewEventDetails = function (eventId) {
   window.location.href = `/web-proj1/event.html?id=${eventId}`;
 };
-
-// Geolocation
-function getUserLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        userLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        loadEvents();
-      },
-      (error) => {
-        console.log("Location access denied:", error);
-      }
-    );
-  }
-}
 
 // Search (renders filtered view, doesn't overwrite allEvents)
 function searchEvents() {
@@ -455,9 +480,81 @@ function setupEventListeners() {
       loadEvents();
     });
   }
+
+  document
+    .getElementById("location-save-btn")
+    ?.addEventListener("click", handleLocationSubmit);
+  document
+    .getElementById("location-gps-btn")
+    ?.addEventListener("click", handleBrowserLocation);
 }
 
 function applyFilters() {
   selectedGenre = selectedGenre || "";
   loadEvents();
+}
+
+async function handleLocationSubmit(event) {
+  event?.preventDefault();
+  const input = document.getElementById("location-input");
+  if (!input) return;
+  const value = input.value.trim();
+  if (!value) {
+    alert("Please type a city or address first.");
+    return;
+  }
+
+  try {
+    setLocationStatus("Looking up that place...");
+    const coords = await geocodePlace(value);
+    userLocation = { lat: coords.lat, lng: coords.lng, label: value };
+    saveUserLocation(userLocation);
+    await addDistancesToEvents();
+    renderEvents();
+    updateLocationStatus();
+  } catch (err) {
+    console.error("Failed to geocode user location", err);
+    setLocationStatus("Could not find that place. Try something else.");
+  }
+}
+
+function handleBrowserLocation() {
+  if (!navigator.geolocation) {
+    alert("Your browser does not support geolocation.");
+    return;
+  }
+
+  setLocationStatus("Requesting your location...");
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      userLocation = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        label: "Current location",
+      };
+      saveUserLocation(userLocation);
+      await addDistancesToEvents();
+      renderEvents();
+      updateLocationStatus();
+    },
+    (err) => {
+      console.error("Geolocation error", err);
+      setLocationStatus("We couldn't read your location.");
+    }
+  );
+}
+
+function setLocationStatus(text) {
+  const status = document.getElementById("location-status");
+  if (status) status.textContent = text;
+}
+
+function updateLocationStatus() {
+  const status = document.getElementById("location-status");
+  if (!status) return;
+  if (userLocation) {
+    status.textContent = `Distances shown from ${userLocation.label}`;
+  } else {
+    status.textContent = "Add a location to see how far events are from you.";
+  }
 }

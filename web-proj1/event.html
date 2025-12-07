@@ -94,11 +94,11 @@
                 <li><strong>📅 Date:</strong> <span id="info-date">-</span></li>
                 <li><strong>🕐 Time:</strong> <span id="info-time">-</span></li>
                 <li>
-                  <strong>📍 Location:</strong>
-                  <span id="info-location">-</span>
+                  <strong>💰 Price:</strong> <span id="info-price">-</span>
                 </li>
                 <li>
-                  <strong>💰 Price:</strong> <span id="info-price">-</span>
+                  <strong>📍 Distance:</strong>
+                  <span id="info-distance">Set your location to see distance.</span>
                 </li>
               </ul>
 
@@ -109,12 +109,31 @@
               </div>
             </section>
 
-            <section id="location-section">
-              <h3>🗺️ Location</h3>
-              <div id="map-container">
-                <p>Map integration coming soon</p>
+            <section class="distance-card">
+              <h3>📍 Distance from you</h3>
+              <p id="detail-location-status">
+                Add a location to see how far this event is from you.
+              </p>
+              <div class="distance-actions">
+                <input
+                  type="text"
+                  id="detail-location-input"
+                  placeholder="Enter your city or address"
+                />
+                <div class="distance-buttons">
+                  <button type="button" id="detail-location-save">
+                    Use this address
+                  </button>
+                  <button type="button" id="detail-location-gps">
+                    Use my device location
+                  </button>
+                </div>
+                <p class="distance-hint">
+                  Powered by OpenStreetMap geocoding. Saved only in your browser.
+                </p>
               </div>
             </section>
+
           </div>
 
           <!-- Right Column -->
