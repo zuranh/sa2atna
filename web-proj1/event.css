@@ -124,6 +124,48 @@ main#main-content {
   color: #0056b3;
 }
 
+.distance-card {
+  background: #fff;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.distance-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.distance-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.distance-buttons button {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #0ab4ff;
+  font-weight: 700;
+  color: #111;
+}
+
+.distance-buttons button:hover {
+  background: #36c4ff;
+}
+
+.distance-hint {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
 /* ========================== */
 /*         TICKET BOX          */
 /* ========================== */

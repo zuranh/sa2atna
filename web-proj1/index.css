@@ -274,6 +274,68 @@ body {
     border-radius: 8px;
 }
 
+.location-card {
+    margin-top: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.location-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.location-title {
+    font-weight: 700;
+    margin: 0;
+}
+
+.location-status {
+    margin: 4px 0 0;
+    color: #4b5563;
+}
+
+.location-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.location-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.location-buttons button {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #0ab4ff;
+    font-weight: 700;
+    color: #111;
+}
+
+.location-buttons button:hover {
+    background: #36c4ff;
+}
+
+.location-hint {
+    margin: 6px 0 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
 /* FILTER BUTTON */
 #filter-form button {
     grid-column: 1 / -1;

@@ -98,25 +98,6 @@
             </div>
 
             <div class="filter-group">
-              <label for="filter-location">Location</label>
-              <input
-                type="text"
-                id="filter-location"
-                placeholder="City or venue"
-              />
-            </div>
-
-            <div class="filter-group">
-              <label for="filter-radius">Radius (km)</label>
-              <input
-                type="number"
-                id="filter-radius"
-                placeholder="10"
-                min="1"
-                max="100"
-              />
-            </div>
-            <div class="filter-group">
               <label for="filter-price">Max Price ($)</label>
               <input
                 type="number"
@@ -136,6 +117,25 @@
                 <option value="price-high">Price (High to Low)</option>
                 <option value="name">Name (A-Z)</option>
               </select>
+            </div>
+
+            <div class="location-card">
+              <div class="location-card-header">
+                <div>
+                  <p class="location-title">Show distance from you</p>
+                  <p class="location-status" id="location-status">
+                    Use your device location to see how far events are from you.
+                  </p>
+                </div>
+              </div>
+              <div class="location-actions">
+                <div class="location-buttons">
+                  <button type="button" id="location-gps-btn">
+                    Use my device location
+                  </button>
+                </div>
+                <p class="location-hint">We only store your choice locally.</p>
+              </div>
             </div>
 
             <button type="submit" id="apply-filters-btn">Apply Filters</button>
