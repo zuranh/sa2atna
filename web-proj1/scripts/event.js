@@ -1,4 +1,4 @@
-import { auth } from "/web-proj1/firebase-config.js";
+import { auth } from "./firebase-config.js";
 import { onAuthStateChanged as fbOnAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // Safety: read event id from URL and bail early if missing
@@ -53,6 +53,10 @@ function updateUIForLoggedIn() {
   if (loginBtn && userMenu) {
     loginBtn.style.display = "none";
     userMenu.style.display = "block";
+    userMenu.style.cursor = "pointer";
+    userMenu.onclick = () => {
+      window.location.href = "account.html";
+    };
     const avatar = document.getElementById("user-avatar");
     if (avatar) {
       avatar.textContent = currentUser?.name
@@ -115,8 +119,8 @@ function renderEvent() {
   document.getElementById("event-title").textContent =
     event.title || event.name || "Untitled Event";
   document.getElementById("event-subtitle").textContent = `${
-    event.location || "Location TBA"
-  } • ${event.date || "Date TBA"}${event.time ? " • " + event.time : ""}`;
+    event.date || "Date TBA"
+  }${event.time ? " • " + event.time : ""}`;
 
   const genresContainer = document.getElementById("event-genres");
   genresContainer.innerHTML = "";
@@ -146,8 +150,6 @@ function renderEvent() {
     event.description || "No description provided.";
   document.getElementById("info-date").textContent = event.date || "TBA";
   document.getElementById("info-time").textContent = event.time || "TBA";
-  document.getElementById("info-location").textContent =
-    event.location || "TBA";
   const price =
     event.price && parseFloat(event.price) > 0
       ? `$${parseFloat(event.price).toFixed(2)}`

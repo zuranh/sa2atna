@@ -1,4 +1,4 @@
-import { auth } from "/web-proj1/firebase-config.js";
+import { auth } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 let allEvents = [];
@@ -6,7 +6,6 @@ let allGenres = [];
 let userFavorites = [];
 let currentUser = null;
 let selectedGenre = "";
-let userLocation = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
   onAuthStateChanged(auth, async (firebaseUser) => {
@@ -21,7 +20,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   await loadGenres();
   await loadEvents();
-  getUserLocation();
   setupEventListeners();
 });
 
@@ -43,6 +41,13 @@ function updateUIForLoggedIn() {
   document.getElementById("favorites-link").style.display = "block";
   document.getElementById("registrations-link").style.display = "block";
   document.getElementById("profile-link").style.display = "block";
+  const userMenu = document.getElementById("user-menu");
+  if (userMenu) {
+    userMenu.style.cursor = "pointer";
+    userMenu.onclick = () => {
+      window.location.href = "account.html";
+    };
+  }
   if (currentUser) {
     const avatar = document.getElementById("user-avatar");
     avatar.textContent = currentUser.name
@@ -62,6 +67,8 @@ function updateUIForLoggedOut() {
   document.getElementById("registrations-link").style.display = "none";
   document.getElementById("profile-link").style.display = "none";
   document.getElementById("admin-link").style.display = "none";
+  const userMenu = document.getElementById("user-menu");
+  if (userMenu) userMenu.onclick = null;
 }
 
 // Load genres from API
@@ -233,23 +240,11 @@ async function loadEvents() {
       params.append("date_to", date); // Add this for single-day filtering
     }
 
-    const location = document.getElementById("filter-location")?.value;
-    // Location filtering isn't implemented in backend, so skip for now
-    // if (location) params.append("location", location);
-
-    const radius = document.getElementById("filter-radius")?.value;
-    if (radius) params.append("radius", radius);
-
     const price = document.getElementById("filter-price")?.value;
     if (price) params.append("price_max", price); // Changed from "max_price"
 
     const sort = document.getElementById("filter-sort")?.value;
     if (sort) params.append("sort", sort);
-
-    if (userLocation) {
-      params.append("lat", userLocation.lat);
-      params.append("lng", userLocation.lng);
-    }
 
     const response = await fetch(
       `/web-proj1/api/events.php?${params.toString()}`
@@ -350,24 +345,6 @@ window.toggleFavorite = async function (eventId) {
 window.viewEventDetails = function (eventId) {
   window.location.href = `/web-proj1/event.html?id=${eventId}`;
 };
-
-// Geolocation
-function getUserLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        userLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        loadEvents();
-      },
-      (error) => {
-        console.log("Location access denied:", error);
-      }
-    );
-  }
-}
 
 // Search (renders filtered view, doesn't overwrite allEvents)
 function searchEvents() {
